@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      =env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  SALES
+  WAREHOUSE
+  ACCOUNTS
+}
+
+enum ChallanStatus {
+  DRAFT
+  CONFIRMED
+}
+
+enum MovementType {
+  IN
+  OUT
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole
+  createdAt DateTime @default(now())
+}
+
+model Customer {
+  id          Int      @id @default(autoincrement())
+  name        String
+  phone       String?
+  email       String?  @unique
+  address     String?
+  gstNumber   String?
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  challans Challan[]
+}
+
+model Product {
+  id            Int      @id @default(autoincrement())
+  name          String
+  sku           String   @unique
+  price         Float
+  stock         Int      @default(0)
+  minimumStock  Int      @default(5)
+  imageUrl      String?
+  createdAt     DateTime @default(now())
+
+  stockMovements StockMovement[]
+  challanItems   ChallanItem[]
+}
+
+model StockMovement {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  quantity    Int
+  movement    MovementType
+  createdAt   DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Challan {
+  id          Int      @id @default(autoincrement())
+  customerId  Int
+  status      ChallanStatus @default(DRAFT)
+  totalAmount Float
+  createdAt   DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  items ChallanItem[]
+}
+
+model ChallanItem {
+  id          Int      @id @default(autoincrement())
+  challanId   Int
+  productId   Int
+  quantity    Int
+  price       Float
+
+  challan Challan @relation(fields: [challanId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
