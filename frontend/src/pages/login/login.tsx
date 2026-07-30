@@ -16,8 +16,11 @@ function Login() {
     try {
       console.log("Submitting:", data);
 
-      const res = await api.post("/auth/login", data);
-
+    //const res = await api.post("/api/auth/login", data)
+  const res = await api.post("/api/auth/login", {
+     email: data.email,
+     password: data.password,
+      });
       console.log("Login Response:", res.data);
 
       // Save JWT Token
